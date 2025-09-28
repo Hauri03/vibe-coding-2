@@ -11,22 +11,44 @@
 <script setup>
 import { onMounted } from 'vue'
 
+// Supabase client
+const supabase = useSupabaseClient()
+
 // Page metadata
 useHead({
   title: 'Sweet Scoops for a Cause - Lions Club Charity Event',
   meta: [
-    { 
-      name: 'description', 
-      content: 'Join Lions Club in making a difference, one delicious scoop at a time! Every ice cream purchase helps fund community projects and supports families in need.' 
+    {
+      name: 'description',
+      content: 'Join Lions Club in making a difference, one delicious scoop at a time! Every ice cream purchase helps fund community projects and supports families in need.'
     }
   ]
 })
 
-onMounted(() => {
-  // Show welcome message
+onMounted(async () => {
+  // Test Supabase connection with your actual 'test' table
+  try {
+    const { data, error } = await supabase.from('test').select('*').limit(3)
+    
+    if (error) {
+      if (error.message.includes('permission denied') || error.message.includes('RLS')) {
+        showNotification('✅ Supabase connected! (RLS protection active)', 'success')
+      } else {
+        showNotification('❌ Supabase error: ' + error.message, 'error')
+      }
+    } else {
+      showNotification('✅ Supabase connected! Found ' + (data?.length || 0) + ' records', 'success')
+      console.log('Test table data:', data)
+    }
+  } catch (err) {
+    showNotification('❌ Failed to connect to Supabase', 'error')
+    console.error('Supabase connection error:', err)
+  }
+
+  // Show welcome message after connection test
   setTimeout(() => {
     showNotification('Welcome to our charity ice cream event! 🍦', 'info')
-  }, 1000)
+  }, 2000)
 })
 
 // Notification system - shared function
